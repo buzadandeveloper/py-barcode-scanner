@@ -1,10 +1,14 @@
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS  # Importă CORS
 import base64
 from PIL import Image
 from io import BytesIO
 import zxing
 
 app = Flask(__name__, template_folder='barcodeScanner/templates')
+
+# Activează CORS pentru toate rutele
+CORS(app)
 
 @app.route('/')
 def index():
@@ -22,11 +26,11 @@ def send_image():
         image_data = base64.b64decode(base64_image_string)
         image = Image.open(BytesIO(image_data))
 
-        # Save the image
+        # Salvează imaginea
         image_path = "decoded_image.jpg"
         image.save(image_path)
 
-        # Scan the image for barcode data
+        # Scanează imaginea pentru datele codului de bare
         reader = zxing.BarCodeReader()
         barcode = reader.decode(image_path)
         if barcode:
