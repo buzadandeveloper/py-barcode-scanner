@@ -22,11 +22,9 @@ def send_image():
         image_data = base64.b64decode(base64_image_string)
         image = Image.open(BytesIO(image_data))
 
-        # Salvează imaginea
         image_path = "decoded_image.jpg"
         image.save(image_path)
 
-        # Scanează imaginea pentru datele codului de bare
         reader = zxing.BarCodeReader()
         barcode = reader.decode(image_path)
         if barcode:
