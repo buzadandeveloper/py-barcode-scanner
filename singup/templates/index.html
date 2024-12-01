@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barcode Scanner</title>
+  <style>
+    *{
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 105vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      width: 100%;
+    }
+
+    div {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 400px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: bold;
+      width: 100%;
+    }
+
+    input[type="text"], input[type="file"] {
+      padding: 8px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    input[type="file"] {
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+
+  <div>
+    <h1>Barcode Scanner</h1>
+    <form>
+      <label for="idnp">IDNP:</label>
+      <input type="text" id="idnp" readonly><br>
+
+      <label for="name">Name:</label>
+      <input type="text" id="name" readonly><br>
+      
+      <label for="surname">Surname:</label>
+      <input type="text" id="surname" readonly><br>
+
+      <label for="country">Country:</label>
+      <input type="text" id="country" readonly><br>
+
+      <label for="birthdate">Birthdate:</label>
+      <input type="text" id="birthdate" readonly><br>
+
+      <label for="gender">Gender:</label>
+      <input type="text" id="gender" readonly><br>
+
+      <label for="idNumber">ID Number:</label>
+      <input type="text" id="idNumber" readonly><br>
+
+      <label for="issueDate">Issue Date:</label>
+      <input type="text" id="issueDate" readonly><br>
+
+      <label for="expiryDate">Expiry Date:</label>
+      <input type="text" id="expiryDate" readonly><br>
+      <input type="file" id="imageInput">
+      <button type="button" onclick="uploadAndScanImage()">Scan</button>
+    </form>
+  </div>
+
+  <script>
+    const specialCharMap = {
+      '&A': 'Ă',
+      '&S': 'Ș',
+      '&T': 'Ț',
+      '&I': 'Î',
+    };
+
+    function uploadAndScanImage() {
+      var input = document.getElementById('imageInput');
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+          var imageData = e.target.result.replace(/^data:image\/(png|jpg|jpeg);base64,/, '');
+          fetch('/send-image', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ base64: imageData }),
+          })
+          .then(response => response.json())
+          .then(data => {
+            var decodedText = data.decodedText;
+
+            decodedText = replaceSpecialChars(decodedText);
+
+            if (decodedText) {
+              var fields = decodedText.split('\n'); 
+
+              document.getElementById('idnp').value = fields[0] || '';
+              document.getElementById('name').value = fields[1] || '';
+              document.getElementById('surname').value = fields[2] || '';
+              document.getElementById('country').value = fields[3] || '';
+              document.getElementById('birthdate').value = fields[4] || '';
+              document.getElementById('gender').value = fields[5] || '';
+              document.getElementById('idNumber').value = fields[6] || '';
+              document.getElementById('issueDate').value = fields[7] || '';
+              document.getElementById('expiryDate').value = fields[8] || '';
+
+              console.log('Decoded Text:', decodedText);
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+          });
+        };
+
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function replaceSpecialChars(text) {
+      for (let key in specialCharMap) {
+        let regex = new RegExp(key, 'g');
+        text = text.replace(regex, specialCharMap[key]);
+      }
+      return text;
+    }
+  </script>
+
+</body>
+</html>
