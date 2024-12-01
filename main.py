@@ -1,15 +1,10 @@
- 
 from flask import Flask, request, jsonify, render_template
-from flask_cors import CORS  # Importă CORS
 import base64
 from PIL import Image
 from io import BytesIO
 import zxing
 
 app = Flask(__name__, template_folder='barcodeScanner/templates')
-
-# Activează CORS pentru toate rutele
-CORS(app)
 
 @app.route('/')
 def index():
